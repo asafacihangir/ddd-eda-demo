@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.phoenix.demo.domain.common.EntityId;
 import org.phoenix.demo.domain.common.result.Result;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.QueryHandler;
+import org.phoenix.demo.shared.cqrs.QueryHandler;
 import org.phoenix.demo.ordermanagement.application.abstractions.repositories.OrderRepository;
 import org.phoenix.demo.ordermanagement.application.orders.queries.OrderSummaryDto;
 import org.phoenix.demo.ordermanagement.domain.Order;

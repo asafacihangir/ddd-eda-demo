@@ -1,13 +1,13 @@
-package org.phoenix.demo.ordermanagement.application.behaviours;
+package org.phoenix.demo.shared.validation;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import java.util.List;
 import java.util.Set;
-import org.phoenix.demo.ordermanagement.application.abstractions.ApplicationValidationException;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.Next;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.PipelineBehavior;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.Request;
+import org.phoenix.demo.shared.cqrs.ApplicationValidationException;
+import org.phoenix.demo.shared.cqrs.Next;
+import org.phoenix.demo.shared.cqrs.PipelineBehavior;
+import org.phoenix.demo.shared.cqrs.Request;
 
 public class ValidationPipelineBehavior<REQ extends Request<R>, R>
         implements PipelineBehavior<REQ, R> {

@@ -12,7 +12,7 @@ import org.phoenix.demo.domain.common.result.Result;
 import org.phoenix.demo.ordermanagement.application.abstractions.repositories.OrderRepository;
 import org.phoenix.demo.ordermanagement.domain.Order;
 
-class contCreateOrderCommandHandlerTest {
+class CreateOrderCommandHandlerTest {
 
     @Test
     void handle_shouldPersistOrderAndReturnId_whenCommandIsValid() {

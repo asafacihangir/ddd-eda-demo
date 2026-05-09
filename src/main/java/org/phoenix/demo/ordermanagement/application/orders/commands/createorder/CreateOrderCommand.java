@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import org.phoenix.demo.domain.common.result.Result;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.Command;
+import org.phoenix.demo.shared.cqrs.Command;
 
 public record CreateOrderCommand(
         @NotBlank String orderId,

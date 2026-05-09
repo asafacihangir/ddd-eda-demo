@@ -1,4 +1,4 @@
-package org.phoenix.demo.ordermanagement.application.behaviours;
+package org.phoenix.demo.shared.validation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -7,9 +7,9 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
-import org.phoenix.demo.ordermanagement.application.abstractions.ApplicationValidationException;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.Command;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.Next;
+import org.phoenix.demo.shared.cqrs.ApplicationValidationException;
+import org.phoenix.demo.shared.cqrs.Command;
+import org.phoenix.demo.shared.cqrs.Next;
 
 class ValidationPipelineBehaviorTest {
 

@@ -12,11 +12,12 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.phoenix.demo.domain.common.EntityId;
 import org.phoenix.demo.domain.common.result.Result;
-import org.phoenix.demo.ordermanagement.application.abstractions.ApplicationValidationException;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.RequestDispatcher;
 import org.phoenix.demo.ordermanagement.application.abstractions.repositories.OrderRepository;
 import org.phoenix.demo.ordermanagement.application.orders.commands.createorder.CreateOrderCommand;
 import org.phoenix.demo.ordermanagement.domain.Order;
+import org.phoenix.demo.ordermanagement.infra.cqrs.CqrsConfiguration;
+import org.phoenix.demo.shared.cqrs.ApplicationValidationException;
+import org.phoenix.demo.shared.cqrs.RequestDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +25,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig
-@Import(ApplicationConfig.class)
+@Import({ApplicationConfig.class, CqrsConfiguration.class})
 class ApplicationConfigIntegrationTest {
 
     @Autowired RequestDispatcher dispatcher;

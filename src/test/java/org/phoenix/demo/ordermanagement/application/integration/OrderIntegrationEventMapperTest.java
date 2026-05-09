@@ -60,7 +60,8 @@ class OrderIntegrationEventMapperTest {
 
     @Test
     void map_shouldThrow_forUnknownEvent() {
-        DomainEvent unknown = new DomainEvent(AGGREGATE_ID, OCCURRED, OrderConstants.AGGREGATE_TYPE_NAME) { };
+        DomainEvent unknown = new DomainEvent(AGGREGATE_ID, OCCURRED, OrderConstants.AGGREGATE_TYPE_NAME)
+        { };
 
         assertThatThrownBy(() -> OrderIntegrationEventMapper.map(unknown))
             .isInstanceOf(IllegalArgumentException.class)

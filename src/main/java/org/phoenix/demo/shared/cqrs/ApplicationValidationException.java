@@ -1,4 +1,4 @@
-package org.phoenix.demo.ordermanagement.application.abstractions;
+package org.phoenix.demo.shared.cqrs;
 
 import java.util.List;
 

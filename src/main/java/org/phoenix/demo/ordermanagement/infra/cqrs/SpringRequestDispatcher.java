@@ -1,14 +1,14 @@
-package org.phoenix.demo.ordermanagement.application.dispatcher;
+package org.phoenix.demo.ordermanagement.infra.cqrs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.Next;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.PipelineBehavior;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.Request;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.RequestDispatcher;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.RequestHandler;
+import org.phoenix.demo.shared.cqrs.Next;
+import org.phoenix.demo.shared.cqrs.PipelineBehavior;
+import org.phoenix.demo.shared.cqrs.Request;
+import org.phoenix.demo.shared.cqrs.RequestDispatcher;
+import org.phoenix.demo.shared.cqrs.RequestHandler;
 import org.springframework.core.GenericTypeResolver;
 
 public class SpringRequestDispatcher implements RequestDispatcher {

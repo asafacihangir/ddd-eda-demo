@@ -1,4 +1,4 @@
-package org.phoenix.demo.ordermanagement.application.abstractions.cqrs;
+package org.phoenix.demo.shared.cqrs;
 
 public interface RequestHandler<REQ extends Request<R>, R> {
 

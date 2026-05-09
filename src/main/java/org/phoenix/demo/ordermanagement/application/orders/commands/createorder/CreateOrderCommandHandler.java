@@ -4,7 +4,7 @@ import org.phoenix.demo.domain.common.error.DomainError;
 import org.phoenix.demo.domain.common.result.Result;
 import org.phoenix.demo.domain.common.valueobject.Money;
 import org.phoenix.demo.domain.common.valueobject.MoneyBreakdown;
-import org.phoenix.demo.ordermanagement.application.abstractions.cqrs.CommandHandler;
+import org.phoenix.demo.shared.cqrs.CommandHandler;
 import org.phoenix.demo.ordermanagement.application.abstractions.repositories.OrderRepository;
 import org.phoenix.demo.ordermanagement.domain.Order;
 

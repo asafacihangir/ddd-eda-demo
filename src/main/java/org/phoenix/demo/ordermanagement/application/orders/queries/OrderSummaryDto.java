@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 
 public record OrderSummaryDto(
         String id,
+        String tenantId,
         String orderId,
         String customerId,
         String status,

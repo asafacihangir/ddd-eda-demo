@@ -18,6 +18,8 @@ import org.phoenix.demo.ordermanagement.domain.OrderStatus;
 
 class CancelOrderCommandHandlerTest {
 
+    private static final String TENANT_ID = "tenant-1";
+
     @Test
     void handle_shouldCancelOrder_whenOrderExistsAndIsPlaced() {
         InMemoryOrderRepository repository = new InMemoryOrderRepository();
@@ -26,7 +28,7 @@ class CancelOrderCommandHandlerTest {
         CancelOrderCommandHandler handler = new CancelOrderCommandHandler(repository);
 
         Result<Void, String> result = handler.handle(
-            new CancelOrderCommand(order.getId().value().toString()));
+            new CancelOrderCommand(TENANT_ID, order.getId().value().toString()));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(repository.updated.get(order.getId()))
@@ -40,7 +42,7 @@ class CancelOrderCommandHandlerTest {
         InMemoryOrderRepository repository = new InMemoryOrderRepository();
         CancelOrderCommandHandler handler = new CancelOrderCommandHandler(repository);
 
-        Result<Void, String> result = handler.handle(new CancelOrderCommand("not-a-uuid"));
+        Result<Void, String> result = handler.handle(new CancelOrderCommand(TENANT_ID, "not-a-uuid"));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).contains("UUID");
@@ -52,7 +54,7 @@ class CancelOrderCommandHandlerTest {
         CancelOrderCommandHandler handler = new CancelOrderCommandHandler(repository);
 
         Result<Void, String> result = handler.handle(
-            new CancelOrderCommand(UUID.randomUUID().toString()));
+            new CancelOrderCommand(TENANT_ID, UUID.randomUUID().toString()));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).contains("not found");
@@ -62,7 +64,7 @@ class CancelOrderCommandHandlerTest {
         Money zero = Money.create(new BigDecimal("0.00"), "USD").getValue();
         Money subtotal = Money.create(new BigDecimal("100.00"), "USD").getValue();
         MoneyBreakdown pricing = MoneyBreakdown.create(subtotal, zero, zero).getValue();
-        return Order.placeNew("ORD-CXL", "CUST-1", pricing).getValue();
+        return Order.placeNew(TENANT_ID, "ORD-CXL", "CUST-1", pricing).getValue();
     }
 
     private static class InMemoryOrderRepository implements OrderRepository {
@@ -70,8 +72,10 @@ class CancelOrderCommandHandlerTest {
         final Map<EntityId<Order>, Order> updated = new HashMap<>();
 
         @Override public void add(Order order) { store.put(order.getId(), order); }
-        @Override public Optional<Order> findById(EntityId<Order> id) {
-            return Optional.ofNullable(store.get(id));
+        @Override public Optional<Order> findById(EntityId<Order> id, String tenantId) {
+            Order order = store.get(id);
+            if (order == null || !order.getTenantId().equals(tenantId)) return Optional.empty();
+            return Optional.of(order);
         }
         @Override public void update(Order order) { updated.put(order.getId(), order); }
     }

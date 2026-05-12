@@ -6,6 +6,7 @@ import org.phoenix.demo.shared.cqrs.Query;
 import org.phoenix.demo.ordermanagement.application.orders.queries.OrderSummaryDto;
 
 public record GetOrderByIdQuery(
+        @NotBlank String tenantId,
         @NotBlank String id
 ) implements Query<Result<OrderSummaryDto, String>> {
 }

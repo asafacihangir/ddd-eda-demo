@@ -19,6 +19,7 @@ class OrderPlacedEventTest {
 
         OrderPlacedEvent event = new OrderPlacedEvent(
                 aggregateId, now,
+                "tenant-1",
                 "ORD-1", "CUST-1",
                 new BigDecimal("100.00"),
                 new BigDecimal("10.00"),
@@ -32,6 +33,7 @@ class OrderPlacedEventTest {
         assertEquals("Order.OrderPlacedEvent", event.getEventType());
         assertNotNull(event.getEventId());
 
+        assertEquals("tenant-1", event.getTenantId());
         assertEquals("ORD-1", event.getOrderId());
         assertEquals("CUST-1", event.getCustomerId());
         assertEquals(new BigDecimal("100.00"), event.getSubtotalAmount());

@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record OrderShippedIntegrationEvent(
+        String tenantId,
         UUID aggregateId,
         String orderId,
         OffsetDateTime occurredOnUtc

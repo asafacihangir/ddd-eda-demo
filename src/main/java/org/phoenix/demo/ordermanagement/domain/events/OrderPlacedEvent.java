@@ -9,6 +9,7 @@ import org.phoenix.demo.ordermanagement.domain.OrderConstants;
 
 public final class OrderPlacedEvent extends DomainEvent {
 
+    private final String tenantId;
     private final String orderId;
     private final String customerId;
     private final BigDecimal subtotalAmount;
@@ -19,6 +20,7 @@ public final class OrderPlacedEvent extends DomainEvent {
 
     public OrderPlacedEvent(UUID aggregateId,
                             OffsetDateTime occurredOnUtc,
+                            String tenantId,
                             String orderId,
                             String customerId,
                             BigDecimal subtotalAmount,
@@ -27,6 +29,7 @@ public final class OrderPlacedEvent extends DomainEvent {
                             BigDecimal totalAmount,
                             String currency) {
         super(aggregateId, occurredOnUtc, OrderConstants.AGGREGATE_TYPE_NAME);
+        this.tenantId = tenantId;
         this.orderId = orderId;
         this.customerId = customerId;
         this.subtotalAmount = subtotalAmount;
@@ -34,6 +37,10 @@ public final class OrderPlacedEvent extends DomainEvent {
         this.taxAmount = taxAmount;
         this.totalAmount = totalAmount;
         this.currency = currency;
+    }
+
+    public String getTenantId() {
+        return tenantId;
     }
 
     public String getOrderId() {

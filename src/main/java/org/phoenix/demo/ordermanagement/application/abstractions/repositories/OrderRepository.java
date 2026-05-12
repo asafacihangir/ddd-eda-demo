@@ -8,7 +8,7 @@ public interface OrderRepository {
 
     void add(Order order);
 
-    Optional<Order> findById(EntityId<Order> id);
+    Optional<Order> findById(EntityId<Order> id, String tenantId);
 
     void update(Order order);
 }

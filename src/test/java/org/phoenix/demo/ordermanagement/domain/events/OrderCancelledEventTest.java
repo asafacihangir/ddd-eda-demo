@@ -15,12 +15,13 @@ class OrderCancelledEventTest {
         UUID aggregateId = UUID.randomUUID();
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
-        OrderCancelledEvent event = new OrderCancelledEvent(aggregateId, now, "ORD-1");
+        OrderCancelledEvent event = new OrderCancelledEvent(aggregateId, now, "tenant-1", "ORD-1");
 
         assertEquals(aggregateId, event.getAggregateId());
         assertEquals(now, event.getOccurredOnUtc());
         assertEquals("Order", event.getAggregateType());
         assertEquals("Order.OrderCancelledEvent", event.getEventType());
+        assertEquals("tenant-1", event.getTenantId());
         assertEquals("ORD-1", event.getOrderId());
     }
 }

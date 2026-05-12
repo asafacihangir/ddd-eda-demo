@@ -15,6 +15,7 @@ public final class OrderIntegrationEventMapper {
             case OrderPlacedEvent e -> new MappedIntegrationEvent(
                 OrderPlacedIntegrationEvent.class.getSimpleName(),
                 new OrderPlacedIntegrationEvent(
+                    e.getTenantId(),
                     e.getAggregateId(),
                     e.getOrderId(),
                     e.getCustomerId(),
@@ -27,11 +28,11 @@ public final class OrderIntegrationEventMapper {
             case OrderCancelledEvent e -> new MappedIntegrationEvent(
                 OrderCancelledIntegrationEvent.class.getSimpleName(),
                 new OrderCancelledIntegrationEvent(
-                    e.getAggregateId(), e.getOrderId(), e.getOccurredOnUtc()));
+                    e.getTenantId(), e.getAggregateId(), e.getOrderId(), e.getOccurredOnUtc()));
             case OrderShippedEvent e -> new MappedIntegrationEvent(
                 OrderShippedIntegrationEvent.class.getSimpleName(),
                 new OrderShippedIntegrationEvent(
-                    e.getAggregateId(), e.getOrderId(), e.getOccurredOnUtc()));
+                    e.getTenantId(), e.getAggregateId(), e.getOrderId(), e.getOccurredOnUtc()));
             default -> throw new IllegalArgumentException(
                 "No integration mapping for " + domainEvent.getClass().getName());
         };

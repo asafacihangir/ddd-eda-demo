@@ -18,6 +18,7 @@ class OutboxMapperTest {
     private static final UUID AGGREGATE_ID = UUID.randomUUID();
     private static final OffsetDateTime OCCURRED =
         OffsetDateTime.of(2026, 5, 7, 10, 0, 0, 0, ZoneOffset.UTC);
+    private static final String TENANT_ID = "tenant-1";
 
     @Test
     void toOutboxRecords_shouldMapEachEventToOneRecord() {
@@ -25,15 +26,16 @@ class OutboxMapperTest {
         OutboxMapper mapper = new OutboxMapper(serializer);
 
         List<DomainEvent> events = List.of(
-            new OrderPlacedEvent(AGGREGATE_ID, OCCURRED, "ORD-1", "CUST-1",
+            new OrderPlacedEvent(AGGREGATE_ID, OCCURRED, TENANT_ID, "ORD-1", "CUST-1",
                 new BigDecimal("100.00"), new BigDecimal("0.00"),
                 new BigDecimal("18.00"), new BigDecimal("118.00"), "USD"),
-            new OrderCancelledEvent(AGGREGATE_ID, OCCURRED, "ORD-1"));
+            new OrderCancelledEvent(AGGREGATE_ID, OCCURRED, TENANT_ID, "ORD-1"));
 
-        List<OutboxRecord> records = mapper.toOutboxRecords(events, "ORD-1");
+        List<OutboxRecord> records = mapper.toOutboxRecords(events, TENANT_ID, "ORD-1");
 
         assertThat(records).hasSize(2);
         assertThat(records).allSatisfy(r -> {
+            assertThat(r.tenantId()).isEqualTo(TENANT_ID);
             assertThat(r.id()).isNotBlank();
             assertThat(r.orderId()).isEqualTo("ORD-1");
             assertThat(r.processed()).isFalse();
@@ -48,7 +50,7 @@ class OutboxMapperTest {
     void toOutboxRecords_shouldReturnEmpty_whenNoEvents() {
         OutboxMapper mapper = new OutboxMapper(new StubSerializer());
 
-        List<OutboxRecord> records = mapper.toOutboxRecords(List.of(), "ORD-X");
+        List<OutboxRecord> records = mapper.toOutboxRecords(List.of(), TENANT_ID, "ORD-X");
 
         assertThat(records).isEmpty();
     }

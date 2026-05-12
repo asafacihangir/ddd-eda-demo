@@ -8,6 +8,7 @@ import org.phoenix.demo.domain.common.result.Result;
 import org.phoenix.demo.shared.cqrs.Command;
 
 public record CreateOrderCommand(
+        @NotBlank String tenantId,
         @NotBlank String orderId,
         @NotBlank String customerId,
         @NotNull @Positive BigDecimal subtotal,

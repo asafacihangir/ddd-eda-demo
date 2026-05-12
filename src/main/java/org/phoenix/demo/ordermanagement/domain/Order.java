@@ -15,17 +15,20 @@ import org.phoenix.demo.ordermanagement.domain.events.OrderShippedEvent;
 
 public final class Order extends AggregateRoot<Order> {
 
+    private final String tenantId;
     private final String orderId;
     private final String customerId;
     private final MoneyBreakdown pricing;
     private OrderStatus status;
 
     private Order(EntityId<Order> id,
+                  String tenantId,
                   String orderId,
                   String customerId,
                   MoneyBreakdown pricing,
                   OrderStatus status) {
         super(id);
+        this.tenantId = Guards.notBlank(tenantId, "tenantId");
         this.orderId = Guards.notBlank(orderId, "orderId");
         this.customerId = Guards.notBlank(customerId, "customerId");
         this.pricing = Guards.notNull(pricing, "pricing");
@@ -33,6 +36,7 @@ public final class Order extends AggregateRoot<Order> {
     }
 
     private Order(EntityId<Order> id,
+                  String tenantId,
                   String orderId,
                   String customerId,
                   MoneyBreakdown pricing,
@@ -40,20 +44,23 @@ public final class Order extends AggregateRoot<Order> {
                   OffsetDateTime createdAtUtc,
                   OffsetDateTime lastModifiedAtUtc) {
         super(id, createdAtUtc, lastModifiedAtUtc);
+        this.tenantId = Guards.notBlank(tenantId, "tenantId");
         this.orderId = Guards.notBlank(orderId, "orderId");
         this.customerId = Guards.notBlank(customerId, "customerId");
         this.pricing = Guards.notNull(pricing, "pricing");
         this.status = Guards.notNull(status, "status");
     }
 
-    public static Result<Order, DomainError> placeNew(String orderId,
+    public static Result<Order, DomainError> placeNew(String tenantId,
+                                                      String orderId,
                                                       String customerId,
                                                       MoneyBreakdown pricing) {
         EntityId<Order> id = EntityId.newId();
-        Order order = new Order(id, orderId, customerId, pricing, OrderStatus.PLACED);
+        Order order = new Order(id, tenantId, orderId, customerId, pricing, OrderStatus.PLACED);
         order.raiseDomainEvent(new OrderPlacedEvent(
                 id.value(),
                 OffsetDateTime.now(ZoneOffset.UTC),
+                tenantId,
                 orderId,
                 customerId,
                 pricing.subtotal().amount(),
@@ -64,14 +71,15 @@ public final class Order extends AggregateRoot<Order> {
         return Result.success(order);
     }
 
-    static Order rehydrate(EntityId<Order> id,
-                           String orderId,
-                           String customerId,
-                           MoneyBreakdown pricing,
-                           OrderStatus status,
-                           OffsetDateTime createdAtUtc,
-                           OffsetDateTime lastModifiedAtUtc) {
-        return new Order(id, orderId, customerId, pricing, status, createdAtUtc, lastModifiedAtUtc);
+    public static Order rehydrate(EntityId<Order> id,
+                                  String tenantId,
+                                  String orderId,
+                                  String customerId,
+                                  MoneyBreakdown pricing,
+                                  OrderStatus status,
+                                  OffsetDateTime createdAtUtc,
+                                  OffsetDateTime lastModifiedAtUtc) {
+        return new Order(id, tenantId, orderId, customerId, pricing, status, createdAtUtc, lastModifiedAtUtc);
     }
 
     public Result<Void, DomainError> cancel() {
@@ -80,7 +88,7 @@ public final class Order extends AggregateRoot<Order> {
         }
 
         status = OrderStatus.CANCELLED;
-        raiseDomainEvent(new OrderCancelledEvent(getId().value(), OffsetDateTime.now(ZoneOffset.UTC), orderId));
+        raiseDomainEvent(new OrderCancelledEvent(getId().value(), OffsetDateTime.now(ZoneOffset.UTC), tenantId, orderId));
         return Result.success(null);
     }
 
@@ -90,8 +98,12 @@ public final class Order extends AggregateRoot<Order> {
         }
 
         status = OrderStatus.SHIPPED;
-        raiseDomainEvent(new OrderShippedEvent(getId().value(), OffsetDateTime.now(ZoneOffset.UTC), orderId));
+        raiseDomainEvent(new OrderShippedEvent(getId().value(), OffsetDateTime.now(ZoneOffset.UTC), tenantId, orderId));
         return Result.success(null);
+    }
+
+    public String getTenantId() {
+        return tenantId;
     }
 
     public String getOrderId() {

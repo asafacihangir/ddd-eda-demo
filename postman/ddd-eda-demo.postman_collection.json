@@ -1,0 +1,249 @@
+{
+  "info": {
+    "name": "ddd-eda-demo - Phase 1",
+    "description": "Order Management API — Place Order ve Cancel Order use case'leri.\n\n**Önkoşul:** Uygulama 8080 portunda çalışıyor olmalı.\n\n```bash\nsource \"$HOME/.sdkman/bin/sdkman-init.sh\" && sdk env\n./mvnw spring-boot:run\n```\n\n**Akış:**\n1. `Place Order — Happy Path` çalıştır → response'dan `orderId` (aggregate UUID) otomatik `lastAggregateId` collection variable'ına kaydedilir\n2. `Cancel Order` çalıştır → `lastAggregateId` kullanılır\n3. Tekrar `Cancel Order` çağrılırsa 422 (zaten cancelled) döner\n\nAggregate UUID'leri `.value()` (UUID) → response'taki `orderId` field'ı, business orderId field'ı ile karıştırılmamalı.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "lastAggregateId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Place Order — Happy Path",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Her çağrıda benzersiz orderId ve customerId üret",
+              "const ts = Date.now();",
+              "pm.collectionVariables.set('orderId', `ORD-${ts}`);",
+              "pm.collectionVariables.set('customerId', `cust-${ts}`);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 201 Created', () => pm.response.to.have.status(201));",
+              "pm.test('response has aggregate orderId (UUID)', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.orderId).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);",
+              "    pm.collectionVariables.set('lastAggregateId', body.orderId);",
+              "});",
+              "pm.test('Location header points to created resource', () => {",
+              "    pm.expect(pm.response.headers.get('Location')).to.match(/\\/api\\/orders\\//);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"customerId\": \"{{customerId}}\",\n  \"subtotalAmount\": 100.00,\n  \"discountAmount\": 10.00,\n  \"taxAmount\": 18.00,\n  \"currencyCode\": \"TRY\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Place Order — Validation Error",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 400 Bad Request', () => pm.response.to.have.status(400));",
+              "pm.test('errors list is present', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.errors).to.be.an('array').that.is.not.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderId\": \"\",\n  \"customerId\": \"cust-1\",\n  \"subtotalAmount\": 100.00,\n  \"discountAmount\": 10.00,\n  \"taxAmount\": 18.00,\n  \"currencyCode\": \"TRY\"\n}"
+        },
+        "description": "Boş orderId ile validation hatası tetiklenir."
+      }
+    },
+    {
+      "name": "Place Order — Domain Error (discount > subtotal)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const ts = Date.now();",
+              "pm.collectionVariables.set('orderId', `ORD-DERR-${ts}`);",
+              "pm.collectionVariables.set('customerId', `cust-derr-${ts}`);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 400 Bad Request', () => pm.response.to.have.status(400));",
+              "pm.test('domain error message present', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.message).to.be.a('string').and.not.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"customerId\": \"{{customerId}}\",\n  \"subtotalAmount\": 50.00,\n  \"discountAmount\": 100.00,\n  \"taxAmount\": 5.00,\n  \"currencyCode\": \"TRY\"\n}"
+        },
+        "description": "Discount > subtotal → MoneyBreakdown.create domain error fırlatır."
+      }
+    },
+    {
+      "name": "Cancel Order — Happy Path",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200 OK', () => pm.response.to.have.status(200));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/{{lastAggregateId}}/cancel",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "{{lastAggregateId}}", "cancel"]
+        },
+        "description": "Önce 'Place Order — Happy Path' çağrılmış olmalı; lastAggregateId collection variable'ı oradan dolar."
+      }
+    },
+    {
+      "name": "Cancel Order — Already Cancelled (422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 422 Unprocessable Entity', () => pm.response.to.have.status(422));",
+              "pm.test('error message indicates invalid state', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.message).to.match(/can be cancelled/i);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/{{lastAggregateId}}/cancel",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "{{lastAggregateId}}", "cancel"]
+        },
+        "description": "Cancel Order — Happy Path'i ardından çalıştırınca order zaten CANCELLED olduğu için 422 döner."
+      }
+    },
+    {
+      "name": "Cancel Order — Not Found (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 404 Not Found', () => pm.response.to.have.status(404));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/00000000-0000-0000-0000-000000000001/cancel",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "00000000-0000-0000-0000-000000000001", "cancel"]
+        },
+        "description": "Var olmayan UUID → 404."
+      }
+    },
+    {
+      "name": "Cancel Order — Invalid UUID (422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 422 Unprocessable Entity', () => pm.response.to.have.status(422));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/not-a-uuid/cancel",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "not-a-uuid", "cancel"]
+        },
+        "description": "Geçersiz UUID formatı → handler 'orderId is not a valid UUID' döner → 422."
+      }
+    }
+  ]
+}

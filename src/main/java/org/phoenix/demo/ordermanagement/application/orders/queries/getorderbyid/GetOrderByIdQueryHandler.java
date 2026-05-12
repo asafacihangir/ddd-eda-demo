@@ -27,7 +27,7 @@ public class GetOrderByIdQueryHandler
             return Result.failure("id is not a valid UUID");
         }
 
-        Optional<Order> found = orderRepository.findById(id);
+        Optional<Order> found = orderRepository.findById(id, query.tenantId());
         if (found.isEmpty()) {
             return Result.failure("Order not found: " + query.id());
         }
@@ -38,6 +38,7 @@ public class GetOrderByIdQueryHandler
     private static OrderSummaryDto toDto(Order order) {
         return new OrderSummaryDto(
             order.getId().value().toString(),
+            order.getTenantId(),
             order.getOrderId(),
             order.getCustomerId(),
             order.getStatus().name(),

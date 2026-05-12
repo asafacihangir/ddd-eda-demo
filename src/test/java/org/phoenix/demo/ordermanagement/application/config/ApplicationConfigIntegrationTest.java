@@ -34,6 +34,7 @@ class ApplicationConfigIntegrationTest {
     @Test
     void dispatch_shouldRunHandler_whenCommandIsValid() {
         CreateOrderCommand command = new CreateOrderCommand(
+            "tenant-1",
             "ORD-100", "CUST-1",
             new BigDecimal("50.00"), new BigDecimal("0.00"), new BigDecimal("9.00"),
             "USD"
@@ -43,11 +44,13 @@ class ApplicationConfigIntegrationTest {
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(repository.added).hasSize(1);
+        assertThat(repository.added.get(0).getTenantId()).isEqualTo("tenant-1");
     }
 
     @Test
     void dispatch_shouldRejectViaValidationBehavior_beforeHandler() {
         CreateOrderCommand invalid = new CreateOrderCommand(
+            "tenant-1",
             "", "CUST-1",
             new BigDecimal("50.00"), new BigDecimal("0.00"), new BigDecimal("9.00"),
             "USD"
@@ -79,7 +82,7 @@ class ApplicationConfigIntegrationTest {
         final List<Order> added = new ArrayList<>();
 
         @Override public void add(Order order) { added.add(order); }
-        @Override public Optional<Order> findById(EntityId<Order> id) { return Optional.empty(); }
+        @Override public Optional<Order> findById(EntityId<Order> id, String tenantId) { return Optional.empty(); }
         @Override public void update(Order order) { }
     }
 }

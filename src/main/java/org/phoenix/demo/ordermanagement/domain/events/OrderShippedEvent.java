@@ -8,11 +8,17 @@ import org.phoenix.demo.ordermanagement.domain.OrderConstants;
 
 public final class OrderShippedEvent extends DomainEvent {
 
+    private final String tenantId;
     private final String orderId;
 
-    public OrderShippedEvent(UUID aggregateId, OffsetDateTime occurredOnUtc, String orderId) {
+    public OrderShippedEvent(UUID aggregateId, OffsetDateTime occurredOnUtc, String tenantId, String orderId) {
         super(aggregateId, occurredOnUtc, OrderConstants.AGGREGATE_TYPE_NAME);
+        this.tenantId = tenantId;
         this.orderId = orderId;
+    }
+
+    public String getTenantId() {
+        return tenantId;
     }
 
     public String getOrderId() {

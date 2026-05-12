@@ -25,6 +25,8 @@ import org.phoenix.demo.ordermanagement.domain.events.OrderShippedEvent;
 
 class OrderTest {
 
+    private static final String TENANT_ID = "tenant-1";
+
     private static MoneyBreakdown samplePricing() {
         Currency usd = Currency.create("USD").getValue();
         Money subtotal = Money.create(new BigDecimal("100.00"), usd).getValue();
@@ -37,11 +39,12 @@ class OrderTest {
     void placeNew_returns_success_with_placed_status_and_raises_event() {
         MoneyBreakdown pricing = samplePricing();
 
-        Result<Order, DomainError> result = Order.placeNew("ORD-1", "CUST-1", pricing);
+        Result<Order, DomainError> result = Order.placeNew(TENANT_ID, "ORD-1", "CUST-1", pricing);
 
         assertTrue(result.isSuccess());
         Order order = result.getValue();
         assertEquals(OrderStatus.PLACED, order.getStatus());
+        assertEquals(TENANT_ID, order.getTenantId());
         assertEquals("ORD-1", order.getOrderId());
         assertEquals("CUST-1", order.getCustomerId());
         assertSame(pricing, order.getPricing());
@@ -50,6 +53,7 @@ class OrderTest {
         assertEquals(1, events.size());
         OrderPlacedEvent placed = assertInstanceOf(OrderPlacedEvent.class, events.get(0));
         assertEquals(order.getId().value(), placed.getAggregateId());
+        assertEquals(TENANT_ID, placed.getTenantId());
         assertEquals("ORD-1", placed.getOrderId());
         assertEquals("CUST-1", placed.getCustomerId());
         assertEquals(new BigDecimal("100.00"), placed.getSubtotalAmount());
@@ -61,7 +65,7 @@ class OrderTest {
 
     @Test
     void cancel_from_placed_succeeds_and_raises_event() {
-        Order order = Order.placeNew("ORD-1", "CUST-1", samplePricing()).getValue();
+        Order order = Order.placeNew(TENANT_ID, "ORD-1", "CUST-1", samplePricing()).getValue();
         order.clearEvents();
 
         Result<Void, DomainError> result = order.cancel();
@@ -71,12 +75,13 @@ class OrderTest {
         List<DomainEvent> events = order.domainEvents();
         assertEquals(1, events.size());
         OrderCancelledEvent cancelled = assertInstanceOf(OrderCancelledEvent.class, events.get(0));
+        assertEquals(TENANT_ID, cancelled.getTenantId());
         assertEquals("ORD-1", cancelled.getOrderId());
     }
 
     @Test
     void cancel_from_shipped_fails_with_bad_request() {
-        Order order = Order.placeNew("ORD-1", "CUST-1", samplePricing()).getValue();
+        Order order = Order.placeNew(TENANT_ID, "ORD-1", "CUST-1", samplePricing()).getValue();
         order.markShipped();
 
         Result<Void, DomainError> result = order.cancel();
@@ -89,7 +94,7 @@ class OrderTest {
 
     @Test
     void markShipped_from_placed_succeeds_and_raises_event() {
-        Order order = Order.placeNew("ORD-1", "CUST-1", samplePricing()).getValue();
+        Order order = Order.placeNew(TENANT_ID, "ORD-1", "CUST-1", samplePricing()).getValue();
         order.clearEvents();
 
         Result<Void, DomainError> result = order.markShipped();
@@ -99,12 +104,13 @@ class OrderTest {
         List<DomainEvent> events = order.domainEvents();
         assertEquals(1, events.size());
         OrderShippedEvent shipped = assertInstanceOf(OrderShippedEvent.class, events.get(0));
+        assertEquals(TENANT_ID, shipped.getTenantId());
         assertEquals("ORD-1", shipped.getOrderId());
     }
 
     @Test
     void markShipped_from_cancelled_fails_with_bad_request() {
-        Order order = Order.placeNew("ORD-1", "CUST-1", samplePricing()).getValue();
+        Order order = Order.placeNew(TENANT_ID, "ORD-1", "CUST-1", samplePricing()).getValue();
         order.cancel();
 
         Result<Void, DomainError> result = order.markShipped();
@@ -122,9 +128,10 @@ class OrderTest {
         OffsetDateTime created = OffsetDateTime.of(2026, 1, 1, 10, 0, 0, 0, ZoneOffset.UTC);
         OffsetDateTime modified = OffsetDateTime.of(2026, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC);
 
-        Order order = Order.rehydrate(id, "ORD-1", "CUST-1", pricing, OrderStatus.SHIPPED, created, modified);
+        Order order = Order.rehydrate(id, TENANT_ID, "ORD-1", "CUST-1", pricing, OrderStatus.SHIPPED, created, modified);
 
         assertEquals(id, order.getId());
+        assertEquals(TENANT_ID, order.getTenantId());
         assertEquals("ORD-1", order.getOrderId());
         assertEquals("CUST-1", order.getCustomerId());
         assertSame(pricing, order.getPricing());

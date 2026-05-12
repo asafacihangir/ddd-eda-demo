@@ -20,6 +20,7 @@ class CreateOrderCommandHandlerTest {
         CreateOrderCommandHandler handler = new CreateOrderCommandHandler(repository);
 
         CreateOrderCommand command = new CreateOrderCommand(
+            "tenant-1",
             "ORD-001",
             "CUST-42",
             new BigDecimal("100.00"),
@@ -34,6 +35,7 @@ class CreateOrderCommandHandlerTest {
         assertThat(result.getValue()).isNotBlank();
         assertThat(repository.added).hasSize(1);
         assertThat(repository.added.get(0).getOrderId()).isEqualTo("ORD-001");
+        assertThat(repository.added.get(0).getTenantId()).isEqualTo("tenant-1");
     }
 
     @Test
@@ -42,6 +44,7 @@ class CreateOrderCommandHandlerTest {
         CreateOrderCommandHandler handler = new CreateOrderCommandHandler(repository);
 
         CreateOrderCommand command = new CreateOrderCommand(
+            "tenant-1",
             "ORD-002",
             "CUST-42",
             new BigDecimal("100.00"),
@@ -65,8 +68,10 @@ class CreateOrderCommandHandlerTest {
         }
 
         @Override
-        public Optional<Order> findById(EntityId<Order> id) {
-            return added.stream().filter(o -> o.getId().equals(id)).findFirst();
+        public Optional<Order> findById(EntityId<Order> id, String tenantId) {
+            return added.stream()
+                .filter(o -> o.getId().equals(id) && o.getTenantId().equals(tenantId))
+                .findFirst();
         }
 
         @Override

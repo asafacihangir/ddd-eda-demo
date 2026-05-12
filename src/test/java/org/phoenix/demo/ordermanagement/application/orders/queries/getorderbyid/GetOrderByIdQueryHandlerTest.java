@@ -18,6 +18,8 @@ import org.phoenix.demo.ordermanagement.domain.Order;
 
 class GetOrderByIdQueryHandlerTest {
 
+    private static final String TENANT_ID = "tenant-1";
+
     @Test
     void handle_shouldReturnDto_whenOrderExists() {
         InMemoryOrderRepository repository = new InMemoryOrderRepository();
@@ -26,10 +28,11 @@ class GetOrderByIdQueryHandlerTest {
         GetOrderByIdQueryHandler handler = new GetOrderByIdQueryHandler(repository);
 
         Result<OrderSummaryDto, String> result =
-            handler.handle(new GetOrderByIdQuery(order.getId().value().toString()));
+            handler.handle(new GetOrderByIdQuery(TENANT_ID, order.getId().value().toString()));
 
         assertThat(result.isSuccess()).isTrue();
         OrderSummaryDto dto = result.getValue();
+        assertThat(dto.tenantId()).isEqualTo(TENANT_ID);
         assertThat(dto.orderId()).isEqualTo("ORD-Q1");
         assertThat(dto.customerId()).isEqualTo("CUST-1");
         assertThat(dto.status()).isEqualTo("PLACED");
@@ -43,7 +46,7 @@ class GetOrderByIdQueryHandlerTest {
             new GetOrderByIdQueryHandler(new InMemoryOrderRepository());
 
         Result<OrderSummaryDto, String> result =
-            handler.handle(new GetOrderByIdQuery("not-a-uuid"));
+            handler.handle(new GetOrderByIdQuery(TENANT_ID, "not-a-uuid"));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).contains("UUID");
@@ -55,7 +58,7 @@ class GetOrderByIdQueryHandlerTest {
             new GetOrderByIdQueryHandler(new InMemoryOrderRepository());
 
         Result<OrderSummaryDto, String> result =
-            handler.handle(new GetOrderByIdQuery(UUID.randomUUID().toString()));
+            handler.handle(new GetOrderByIdQuery(TENANT_ID, UUID.randomUUID().toString()));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).contains("not found");
@@ -65,15 +68,17 @@ class GetOrderByIdQueryHandlerTest {
         Money zero = Money.create(new BigDecimal("0.00"), "USD").getValue();
         Money subtotal = Money.create(new BigDecimal("100.00"), "USD").getValue();
         MoneyBreakdown pricing = MoneyBreakdown.create(subtotal, zero, zero).getValue();
-        return Order.placeNew("ORD-Q1", "CUST-1", pricing).getValue();
+        return Order.placeNew(TENANT_ID, "ORD-Q1", "CUST-1", pricing).getValue();
     }
 
     private static class InMemoryOrderRepository implements OrderRepository {
         final Map<EntityId<Order>, Order> store = new HashMap<>();
 
         @Override public void add(Order order) { store.put(order.getId(), order); }
-        @Override public Optional<Order> findById(EntityId<Order> id) {
-            return Optional.ofNullable(store.get(id));
+        @Override public Optional<Order> findById(EntityId<Order> id, String tenantId) {
+            Order order = store.get(id);
+            if (order == null || !order.getTenantId().equals(tenantId)) return Optional.empty();
+            return Optional.of(order);
         }
         @Override public void update(Order order) { store.put(order.getId(), order); }
     }

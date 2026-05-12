@@ -1,0 +1,30 @@
+spring:
+  profiles:
+    active: ${APP_ROLE:both}
+
+app:
+  role: ${APP_ROLE:both}
+  cosmos:
+    uri: ${COSMOS_ENDPOINT:}
+    key: ${COSMOS_KEY:}
+    database: ${COSMOS_DATABASE:ordermanagement}
+    orders-container: ${COSMOS_ORDERS_CONTAINER:orders}
+    leases-container: ${COSMOS_LEASES_CONTAINER:leases}
+  outbox:
+    changefeed:
+      processor-name: outbox-dispatcher
+      instance-name: ${HOSTNAME:local-instance}
+      feed-poll-delay: 1s
+      max-items-per-batch: 100
+
+logging:
+  level:
+    com.azure: WARN
+
+---
+spring:
+  config:
+    activate:
+      on-profile: worker
+  main:
+    web-application-type: none

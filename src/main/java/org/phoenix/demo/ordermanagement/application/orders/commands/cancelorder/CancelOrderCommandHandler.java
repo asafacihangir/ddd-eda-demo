@@ -27,7 +27,7 @@ public class CancelOrderCommandHandler
             return Result.failure("orderId is not a valid UUID");
         }
 
-        Optional<Order> found = orderRepository.findById(id);
+        Optional<Order> found = orderRepository.findById(id, command.tenantId());
         if (found.isEmpty()) {
             return Result.failure("Order not found: " + command.orderId());
         }

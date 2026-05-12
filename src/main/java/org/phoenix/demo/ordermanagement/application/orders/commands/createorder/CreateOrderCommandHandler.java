@@ -44,7 +44,7 @@ public class CreateOrderCommandHandler
         }
 
         Result<Order, DomainError> order =
-            Order.placeNew(command.orderId(), command.customerId(), pricing.getValue());
+            Order.placeNew(command.tenantId(), command.orderId(), command.customerId(), pricing.getValue());
         if (order.isFailure()) {
             return Result.failure(order.getError().message());
         }

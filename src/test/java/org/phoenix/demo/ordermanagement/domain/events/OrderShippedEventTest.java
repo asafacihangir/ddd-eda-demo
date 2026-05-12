@@ -15,12 +15,13 @@ class OrderShippedEventTest {
         UUID aggregateId = UUID.randomUUID();
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
-        OrderShippedEvent event = new OrderShippedEvent(aggregateId, now, "ORD-1");
+        OrderShippedEvent event = new OrderShippedEvent(aggregateId, now, "tenant-1", "ORD-1");
 
         assertEquals(aggregateId, event.getAggregateId());
         assertEquals(now, event.getOccurredOnUtc());
         assertEquals("Order", event.getAggregateType());
         assertEquals("Order.OrderShippedEvent", event.getEventType());
+        assertEquals("tenant-1", event.getTenantId());
         assertEquals("ORD-1", event.getOrderId());
     }
 }

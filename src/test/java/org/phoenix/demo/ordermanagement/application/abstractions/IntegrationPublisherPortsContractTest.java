@@ -2,6 +2,8 @@ package org.phoenix.demo.ordermanagement.application.abstractions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -20,9 +22,11 @@ class IntegrationPublisherPortsContractTest {
             "outbox-1", "ORD-1",
             "OrderPlacedIntegrationEvent",
             "{\"orderId\":\"ORD-1\"}",
-            null, false);
+            null, false,
+            OutboxRecord.STATUS_PENDING, null);
 
-        publishOutboxRecord(record, publisher, auditLogger, marker);
+        OffsetDateTime publishedAt = OffsetDateTime.now(ZoneOffset.UTC);
+        publishOutboxRecord(record, publisher, auditLogger, marker, publishedAt);
 
         assertThat(publisher.published).hasSize(1);
         assertThat(publisher.published.get(0).outboxItemId).isEqualTo("outbox-1");
@@ -30,15 +34,17 @@ class IntegrationPublisherPortsContractTest {
         assertThat(auditLogger.audited).hasSize(1);
         assertThat(marker.processed).containsExactly("outbox-1");
         assertThat(marker.tenants).containsExactly("tenant-1");
+        assertThat(marker.publishedAts).containsExactly(publishedAt);
     }
 
     private static void publishOutboxRecord(OutboxRecord record,
                                             IntegrationEventPublisher publisher,
                                             IntegrationAuditLogger auditLogger,
-                                            OutboxProcessedMarker marker) {
+                                            OutboxProcessedMarker marker,
+                                            OffsetDateTime publishedAt) {
         publisher.publishOutbox(record.tenantId(), record.id(), record.orderId(), record.eventType(), record.payloadJson());
         auditLogger.logPublish(record.tenantId(), record.orderId(), record.id(), record.eventType(), record.payloadJson());
-        marker.markProcessed(record.tenantId(), record.id());
+        marker.markPublished(record.tenantId(), record.id(), publishedAt);
     }
 
     private record PublishedItem(String tenantId, String outboxItemId, String orderId, String eventType, String payloadJson) { }
@@ -64,11 +70,13 @@ class IntegrationPublisherPortsContractTest {
     private static class RecordingMarker implements OutboxProcessedMarker {
         final List<String> tenants = new ArrayList<>();
         final List<String> processed = new ArrayList<>();
+        final List<OffsetDateTime> publishedAts = new ArrayList<>();
 
         @Override
-        public void markProcessed(String tenantId, String outboxItemId) {
+        public void markPublished(String tenantId, String outboxItemId, OffsetDateTime publishedAt) {
             tenants.add(tenantId);
             processed.add(outboxItemId);
+            publishedAts.add(publishedAt);
         }
     }
 }

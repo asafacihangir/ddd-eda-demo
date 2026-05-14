@@ -7,6 +7,9 @@ import com.azure.cosmos.models.ChangeFeedProcessorOptions;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
 import org.phoenix.demo.ordermanagement.application.abstractions.IntegrationAuditLogger;
 import org.phoenix.demo.ordermanagement.application.abstractions.IntegrationEventPublisher;
 import org.phoenix.demo.ordermanagement.application.abstractions.OutboxProcessedMarker;
@@ -15,8 +18,6 @@ import org.phoenix.demo.ordermanagement.infra.worker.WorkerComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.util.List;
 
 @WorkerComponent
 public class OutboxChangeFeedProcessor {
@@ -94,7 +95,7 @@ public class OutboxChangeFeedProcessor {
             try {
                 audit.logPublish(tenantId, orderId, id, eventType, payloadJson);
                 publisher.publishOutbox(tenantId, id, orderId, eventType, payloadJson);
-                marker.markProcessed(tenantId, id);
+                marker.markPublished(tenantId, id, OffsetDateTime.now(ZoneOffset.UTC));
             } catch (RuntimeException ex) {
                 log.error("Dispatch failed id={} tenantId={}; continuing", id, tenantId, ex);
             }

@@ -39,6 +39,8 @@ class OutboxMapperTest {
             assertThat(r.id()).isNotBlank();
             assertThat(r.orderId()).isEqualTo("ORD-1");
             assertThat(r.processed()).isFalse();
+            assertThat(r.status()).isEqualTo(OutboxRecord.STATUS_PENDING);
+            assertThat(r.publishedAt()).isNull();
             assertThat(r.payloadJson()).startsWith("STUB:");
             assertThat(r.metadata()).isEmpty();
         });

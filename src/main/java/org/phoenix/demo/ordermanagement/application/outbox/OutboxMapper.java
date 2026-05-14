@@ -28,7 +28,9 @@ public final class OutboxMapper {
                     mapped.eventType(),
                     serializer.serialize(mapped.payload()),
                     null,
-                    false);
+                    false,
+                    OutboxRecord.STATUS_PENDING,
+                    null);
             })
             .toList();
     }

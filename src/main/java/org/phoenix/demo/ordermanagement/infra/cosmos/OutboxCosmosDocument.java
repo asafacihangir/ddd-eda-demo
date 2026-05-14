@@ -18,6 +18,8 @@ public class OutboxCosmosDocument {
     private String payloadJson;
     private Map<String, String> metadata;
     private boolean processed;
+    private String status = "PENDING";
+    private OffsetDateTime publishedAt;
     private OffsetDateTime createdAtUtc;
 
     public OutboxCosmosDocument() {
@@ -101,5 +103,21 @@ public class OutboxCosmosDocument {
 
     public void setCreatedAtUtc(OffsetDateTime createdAtUtc) {
         this.createdAtUtc = createdAtUtc;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public OffsetDateTime getPublishedAt() {
+        return publishedAt;
+    }
+
+    public void setPublishedAt(OffsetDateTime publishedAt) {
+        this.publishedAt = publishedAt;
     }
 }

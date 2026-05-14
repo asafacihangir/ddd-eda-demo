@@ -85,6 +85,8 @@ class OutboxChangeFeedProcessorIntegrationTest {
                             .block()
                             .getItem();
                     assertThat(reloaded.isProcessed()).isTrue();
+                    assertThat(reloaded.getStatus()).isEqualTo("PUBLISHED");
+                    assertThat(reloaded.getPublishedAt()).isNotNull();
                 });
     }
 }

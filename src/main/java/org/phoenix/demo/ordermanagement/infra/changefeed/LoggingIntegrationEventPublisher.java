@@ -4,8 +4,10 @@ import org.phoenix.demo.ordermanagement.application.abstractions.IntegrationEven
 import org.phoenix.demo.ordermanagement.infra.worker.WorkerComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 @WorkerComponent
+@ConditionalOnProperty(name = "app.servicebus.publisher.enabled", havingValue = "false", matchIfMissing = true)
 public class LoggingIntegrationEventPublisher implements IntegrationEventPublisher {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingIntegrationEventPublisher.class);

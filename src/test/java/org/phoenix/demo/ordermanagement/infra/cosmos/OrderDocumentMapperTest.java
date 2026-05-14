@@ -66,7 +66,9 @@ class OrderDocumentMapperTest {
                 "OrderPlacedIntegrationEvent",
                 "{\"foo\":\"bar\"}",
                 Map.of("traceId", "abc"),
-                false);
+                false,
+                OutboxRecord.STATUS_PENDING,
+                null);
 
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
         OutboxCosmosDocument doc = mapper.toOutboxDocument(record, "cust-3", now);
@@ -80,6 +82,8 @@ class OrderDocumentMapperTest {
         assertThat(doc.getPayloadJson()).isEqualTo("{\"foo\":\"bar\"}");
         assertThat(doc.getMetadata()).containsEntry("traceId", "abc");
         assertThat(doc.isProcessed()).isFalse();
+        assertThat(doc.getStatus()).isEqualTo("PENDING");
+        assertThat(doc.getPublishedAt()).isNull();
         assertThat(doc.getCreatedAtUtc()).isEqualTo(now);
     }
 

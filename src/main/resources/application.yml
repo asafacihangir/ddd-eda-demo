@@ -1,6 +1,12 @@
 spring:
   profiles:
     active: ${APP_ROLE:both}
+  cloud:
+    azure:
+      servicebus:
+        enabled: ${SERVICEBUS_ENABLED:false}
+        connection-string: ${SERVICEBUS_CONNECTION_STRING:}
+        entity-type: topic
 
 app:
   role: ${APP_ROLE:both}
@@ -16,6 +22,14 @@ app:
       instance-name: ${HOSTNAME:local-instance}
       feed-poll-delay: 1s
       max-items-per-batch: 100
+  servicebus:
+    publisher:
+      topic-name: ${SERVICEBUS_TOPIC:order-events}
+      enabled: ${SERVICEBUS_PUBLISHER_ENABLED:false}
+    consumer:
+      enabled: ${SERVICEBUS_CONSUMER_ENABLED:false}
+      topic-name: ${SERVICEBUS_TOPIC:order-events}
+      subscription-name: ${SERVICEBUS_SUBSCRIPTION:demo-consumer}
 
 logging:
   level:

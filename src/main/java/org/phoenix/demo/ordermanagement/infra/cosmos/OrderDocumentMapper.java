@@ -65,6 +65,8 @@ public class OrderDocumentMapper {
         doc.setPayloadJson(record.payloadJson());
         doc.setMetadata(record.metadata() == null ? Map.of() : record.metadata());
         doc.setProcessed(record.processed());
+        doc.setStatus(record.status());
+        doc.setPublishedAt(record.publishedAt());
         doc.setCreatedAtUtc(createdAtUtc);
         return doc;
     }
